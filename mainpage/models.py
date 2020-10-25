@@ -31,7 +31,7 @@ def getRecentTrack():
         artist_name.append(track['artists'][0]['name'])
         track_name.append(track['name'])
 
-        print(idx, track['artists'][0]['name'], " – ", track['name'])
+        # print(idx, track['artists'][0]['name'], " – ", track['name'])
 
         track_feature = track['id']
         track_id.append(track_feature)
@@ -63,7 +63,7 @@ def getRecommendationsTrack():
                                          min_loudness=min(loudness))
 
     for idx, item in enumerate(recommendations['tracks']):
-        print(idx, item['artists'][0]['name'], " – ", item['name'])
+        # print(idx, item['artists'][0]['name'], " – ", item['name'])
         artist_name.append(item['artists'][0]['name'])
         track_name.append(item['name'])
         track_id = item['id']
