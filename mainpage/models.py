@@ -1,24 +1,19 @@
-from django.db import models
 import spotipy
-import sys
-from spotipy.oauth2 import SpotifyOAuth
+from spotipy import oauth2
 
-artist_id = []
-track_id = []
-danceability = []
-energy = []
-tempo = []
-loudness = []
-recommendations_track_id = []
 scope = 'user-library-read user-library-modify user-read-recently-played playlist-modify-private playlist-read-collaborative playlist-read-private playlist-modify-public'
 cliend_id = '080e4d9856d645c396e08ec0b1088a02'
 client_secret = '26b9fef0e6fc4b11a77618ba41e9cd20'
-Uri = 'https://elopakala.herokuapp.com/addplaylist/'
+Uri = 'http://127.0.0.1:8000/'
 
-
-sp = spotipy.Spotify(auth_manager=SpotifyOAuth(cliend_id, client_secret, Uri, scope=scope))
+sp_oauth = oauth2.SpotifyOAuth(cliend_id, client_secret, Uri, scope=scope)
+sp = spotipy.Spotify(auth_manager=sp_oauth)
 
 def getRecentTrack():
+    global artist_id, track_id
+    artist_id = []
+    track_id = []
+
     artist_name = []
     track_name =[]
 
@@ -39,6 +34,11 @@ def getRecentTrack():
         artist_id.append(artist)
 
     # Get track Attribute
+    global danceability, energy, tempo, loudness
+    danceability = []
+    energy = []
+    tempo = []
+    loudness = []
     for item_id in track_id:
         audio_features = sp.audio_features(tracks=item_id)
         for idx, item in enumerate(audio_features):
@@ -54,6 +54,8 @@ def getRecentTrack():
 
 # Get recommendation track based on artists and attribute
 def getRecommendationsTrack():
+    global recommendations_track_id
+    recommendations_track_id = []
     artist_name = []
     track_name = []
     recommendations = sp.recommendations(seed_artists=artist_id, min_danceability=min(danceability),
@@ -88,6 +90,7 @@ def playlist(playlist_name):
 
     #Add recommendations track to playlist
     sp.playlist_add_items(playlist_id=playlist_id, items=recommendations_track_id)
+
 
 # data = json.dumps(audio_features)
 # print(data)
