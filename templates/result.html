@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% for rartist in rartists %}
+<h2>{{rartist}}</h2>
+    {% endfor %}
+    <form method="post">
+        {% csrf_token %}
+        <input name="playlist" type="text">
+        <button type="submit" value="submit">submit</button>
+    </form>
+</body>
+</html>
