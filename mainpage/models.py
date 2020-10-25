@@ -19,10 +19,6 @@ cache = '.cache-'+username
 
 sp = spotipy.Spotify(auth_manager=SpotifyOAuth(cliend_id, client_secret, Uri, username=username, scope=scope))
 
-#Get user id
-user_profile = sp.me()
-user_id = user_profile['id']
-
 def getRecentTrack():
     artist_name = []
     track_name =[]
@@ -80,6 +76,10 @@ def getRecommendationsTrack():
     return content
 
 def playlist(playlist_name):
+    # Get user id
+    user_profile = sp.me()
+    user_id = user_profile['id']
+
     #Create Playlist
     sp.user_playlist_create(user=user_id, name=playlist_name, public=True)
 
