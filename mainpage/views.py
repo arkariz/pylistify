@@ -9,7 +9,7 @@ scope = 'user-library-read user-library-modify user-read-recently-played playlis
 
 cliend_id = '080e4d9856d645c396e08ec0b1088a02'
 client_secret = '26b9fef0e6fc4b11a77618ba41e9cd20'
-Uri = 'http://127.0.0.1:8000/addplaylist/'
+Uri = 'https://elopakala.herokuapp.com/addplaylist/'
 username = sys.argv[0]
 cache = '.cache-'+username
 
