@@ -13,11 +13,11 @@ recommendations_track_id = []
 scope = 'user-library-read user-library-modify user-read-recently-played playlist-modify-private playlist-read-collaborative playlist-read-private playlist-modify-public'
 cliend_id = '080e4d9856d645c396e08ec0b1088a02'
 client_secret = '26b9fef0e6fc4b11a77618ba41e9cd20'
-Uri = 'https://elopakala.herokuapp.com/addplaylist/'
+Uri = 'http://127.0.0.1:8000/addplaylist/'
 username = sys.argv[0]
 cache = '.cache-'+username
 
-sp = spotipy.Spotify(auth_manager=SpotifyOAuth(cliend_id, client_secret, Uri, username=username, scope=scope))
+# sp = spotipy.Spotify(auth_manager=SpotifyOAuth(cliend_id, client_secret, Uri, username=username, scope=scope))
 
 def getRecentTrack():
     artist_name = []
