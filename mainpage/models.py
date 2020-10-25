@@ -17,7 +17,7 @@ Uri = 'http://127.0.0.1:8000/addplaylist/'
 username = sys.argv[0]
 cache = '.cache-'+username
 
-# sp = spotipy.Spotify(auth_manager=SpotifyOAuth(cliend_id, client_secret, Uri, username=username, scope=scope))
+sp = spotipy.Spotify(auth_manager=SpotifyOAuth(cliend_id, client_secret, Uri, username=username, scope=scope))
 
 def getRecentTrack():
     artist_name = []

@@ -3,7 +3,7 @@ import spotipy
 from spotipy import oauth2
 from spotipy.oauth2 import SpotifyOAuth
 from django.shortcuts import render
-# from .models import getRecentTrack, getRecommendationsTrack, playlist
+from .models import getRecentTrack, getRecommendationsTrack, playlist
 
 scope = 'user-library-read user-library-modify user-read-recently-played playlist-modify-private playlist-read-collaborative playlist-read-private playlist-modify-public'
 
@@ -32,35 +32,35 @@ def index(request):
 
     if access_token:
         print("Access token available! Trying to get user information...")
-        # if request.method == 'POST':
-        #     playlist_imput_name = request.POST.get('playlist')
-        #     playlist(playlist_imput_name)
-        # else:
-        #     recentTrack = getRecentTrack()
-        #     recommendationTrack = getRecommendationsTrack()
-        #     context = {
-        #         'artists': recentTrack['artist'],
-        #         'tracks': recentTrack['track_name'],
-        #         'rartists': recommendationTrack['artist']
-        #     }
-        #
-        #     return render(request, 'result.html', context)
+        if request.method == 'POST':
+            playlist_imput_name = request.POST.get('playlist')
+            playlist(playlist_imput_name)
+        else:
+            recentTrack = getRecentTrack()
+            recommendationTrack = getRecommendationsTrack()
+            context = {
+                'artists': recentTrack['artist'],
+                'tracks': recentTrack['track_name'],
+                'rartists': recommendationTrack['artist']
+            }
+
+            return render(request, 'result.html', context)
 
     else:
-        return htmlForLoginButton(request)
-        # if request.method == 'POST':
-        #     playlist_imput_name = request.POST.get('playlist')
-        #     playlist(playlist_imput_name)
-        # else:
-        #     recentTrack = getRecentTrack()
-        #     recommendationTrack = getRecommendationsTrack()
-        #     context = {
-        #         'artists': recentTrack['artist'],
-        #         'tracks': recentTrack['track_name'],
-        #         'rartists': recommendationTrack['artist']
-        #     }
-        #
-        #     return render(request, 'result.html', context)
+        # return htmlForLoginButton(request)
+        if request.method == 'POST':
+            playlist_imput_name = request.POST.get('playlist')
+            playlist(playlist_imput_name)
+        else:
+            recentTrack = getRecentTrack()
+            recommendationTrack = getRecommendationsTrack()
+            context = {
+                'artists': recentTrack['artist'],
+                'tracks': recentTrack['track_name'],
+                'rartists': recommendationTrack['artist']
+            }
+
+            return render(request, 'result.html', context)
 
 
 
