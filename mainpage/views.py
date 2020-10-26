@@ -135,7 +135,9 @@ def mainPage(request):
         return redirect('/')
 
 def login(request):
+    print("pepepeppepepepepepepep")
     url = request.build_absolute_uri()
+    print("lalalalalagit")
     code = sp_oauth.parse_response_code(url)
     print("Found Spotify auth code in Request URL! Trying to get valid access token...")
     token_info = sp_oauth.get_access_token(code)
