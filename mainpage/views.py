@@ -1,4 +1,4 @@
-import os
+import os, sys
 import spotipy
 from spotipy import oauth2
 from spotipy.oauth2 import SpotifyOAuth
@@ -11,9 +11,11 @@ scope = 'user-library-read user-library-modify ' \
 
 cliend_id = '080e4d9856d645c396e08ec0b1088a02'
 client_secret = '26b9fef0e6fc4b11a77618ba41e9cd20'
+# Uri = 'http://127.0.0.1:8000/login/'
 Uri = 'http://pylistify.herokuapp.com/login/'
+username = sys.argv
 
-sp_oauth = oauth2.SpotifyOAuth(cliend_id, client_secret, Uri, scope=scope)
+sp_oauth = oauth2.SpotifyOAuth(cliend_id, client_secret, Uri, scope=scope, username=username)
 
 def index(request):
     token_info = sp_oauth.get_cached_token()
@@ -57,6 +59,7 @@ def login(request):
     code = sp_oauth.parse_response_code(url)
     print("Found Spotify auth code in Request URL! Trying to get valid access token...")
     token_info = sp_oauth.get_access_token(code)
+    username = token_info['access_token']
     return redirect('/')
 
 def getSPOauthURI():
