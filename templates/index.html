@@ -7,9 +7,15 @@
 </head>
 <body>
         {% if login %}
-        <a href="{{login}}">login</a>
+            <a href="{{login}}">login</a>
+
         {% else %}
-        <a href="{% url 'main' %}">add</a>
+            <h4>songs recently played</h4>
+            {% for recent_song in recent_songs %}
+                <h5>{{recent_song}}</h5>
+            {% endfor %}
+
+        <a href="{% url 'main' %}">See Recommendation Songs</a>
         {% endif %}
 </body>
 </html>

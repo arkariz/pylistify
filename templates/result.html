@@ -9,13 +9,6 @@
 {% for song in songs %}
     <h5>{{song}}</h5>
 {% endfor %}
-<!--    {% for rtrack in rtracks %}-->
-<!--    {{rtrack}} - -->
-<!--    {% endfor %}-->
-
-<!--    {% for rartist in rartists %}-->
-<!--    {{rartist}} <br>-->
-<!--    {% endfor %}-->
 
 <br>
 <h4>This tracks will added to your new playlist</h4>
@@ -24,7 +17,7 @@
         {% csrf_token %}
         <h4>playlist name</h4>
         <input name="playlist" type="text">
-        <button type="submit" value="submit">submit</button>
+        <button type="submit" value="submit">Add new playlist</button>
     </form>
 </body>
 </html>
