@@ -1,4 +1,4 @@
-import sys
+import os
 import spotipy
 from spotipy import oauth2
 from spotipy.oauth2 import SpotifyOAuth
@@ -37,6 +37,7 @@ def mainPage(request):
         if request.method == 'POST':
             playlist_imput_name = request.POST.get('playlist')
             playlist(playlist_imput_name)
+            os.remove('.cache')
             return render(request, 'success_notif.html')
         else:
             recentTrack = getRecentTrack()
