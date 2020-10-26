@@ -5,11 +5,24 @@
     <title>Title</title>
 </head>
 <body>
-{% for rartist in rartists %}
-<h2>{{rartist}}</h2>
-    {% endfor %}
+
+{% for song in songs %}
+    <h5>{{song}}</h5>
+{% endfor %}
+<!--    {% for rtrack in rtracks %}-->
+<!--    {{rtrack}} - -->
+<!--    {% endfor %}-->
+
+<!--    {% for rartist in rartists %}-->
+<!--    {{rartist}} <br>-->
+<!--    {% endfor %}-->
+
+<br>
+<h4>This tracks will added to your new playlist</h4>
+<br>
     <form method="post">
         {% csrf_token %}
+        <h4>playlist name</h4>
         <input name="playlist" type="text">
         <button type="submit" value="submit">submit</button>
     </form>

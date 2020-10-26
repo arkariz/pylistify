@@ -4,7 +4,7 @@ from spotipy import oauth2
 scope = 'user-library-read user-library-modify user-read-recently-played playlist-modify-private playlist-read-collaborative playlist-read-private playlist-modify-public'
 cliend_id = '080e4d9856d645c396e08ec0b1088a02'
 client_secret = '26b9fef0e6fc4b11a77618ba41e9cd20'
-Uri = 'http://127.0.0.1:8000/'
+Uri = 'http://127.0.0.1:8000/login/'
 
 sp_oauth = oauth2.SpotifyOAuth(cliend_id, client_secret, Uri, scope=scope)
 sp = spotipy.Spotify(auth_manager=sp_oauth)
@@ -56,8 +56,7 @@ def getRecentTrack():
 def getRecommendationsTrack():
     global recommendations_track_id
     recommendations_track_id = []
-    artist_name = []
-    track_name = []
+    songs = []
     recommendations = sp.recommendations(seed_artists=artist_id, min_danceability=min(danceability),
                                          max_danceability=max(danceability), min_tempo=min(tempo),
                                          max_tempo=max(tempo), min_energy=min(energy), max_energy=max(energy),
@@ -65,14 +64,12 @@ def getRecommendationsTrack():
 
     for idx, item in enumerate(recommendations['tracks']):
         # print(idx, item['artists'][0]['name'], " – ", item['name'])
-        artist_name.append(item['artists'][0]['name'])
-        track_name.append(item['name'])
+        songs.append(item['name'] + ' - ' + item['artists'][0]['name'])
         track_id = item['id']
         recommendations_track_id.append(track_id)
 
     content = {
-        'artist': artist_name,
-        'track_name': track_name
+        'songs' : songs
     }
     return content
 

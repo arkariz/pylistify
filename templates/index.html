@@ -6,6 +6,10 @@
     <title>Listify</title>
 </head>
 <body>
+        {% if login %}
+        <a href="{{login}}">login</a>
+        {% else %}
         <a href="{% url 'main' %}">add</a>
+        {% endif %}
 </body>
 </html>
