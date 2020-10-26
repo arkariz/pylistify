@@ -1,4 +1,4 @@
-import os, random, string
+import os, uuid
 import spotipy
 from spotipy import oauth2
 from django.shortcuts import render, redirect
@@ -12,32 +12,49 @@ client_secret = '26b9fef0e6fc4b11a77618ba41e9cd20'
 # Uri = 'http://127.0.0.1:8000/login/'
 Uri = 'http://pylistify.herokuapp.com/login/'
 
-random_string = string.digits
-username = ''.join(random.choice(random_string) for i in range (100))
+cache_path = './.spotify_caches/'
+if not os.path.exists(cache_path):
+    os.makedirs(cache_path)
 
-sp_oauth = oauth2.SpotifyOAuth(cliend_id, client_secret, Uri, scope=scope, username=username)
+def sessions_cache_path(request):
+    return cache_path + request.session.get('uuid')
 
 def index(request):
+    if not request.session.get('uuid'):
+        request.session['uuid'] = str(uuid.uuid4())
+
+    sp_oauth = oauth2.SpotifyOAuth(cliend_id, client_secret, Uri, scope=scope, cache_path=sessions_cache_path(request))
     token_info = sp_oauth.get_cached_token()
     if token_info:
         print("Token Found")
-        recentTrack = getRecentTrack()
+        recentTrack = getRecentTrack(request)
         context = {
             'recent_songs': recentTrack['recent_songs']
         }
         return render(request, 'index.html', context)
     else:
         print("Getting Token")
-        auth_url = getSPOauthURI()
+        auth_url = sp_oauth.get_authorize_url()
         htmlLoginButton = auth_url
         context = {
             'login': htmlLoginButton
         }
         return render(request, 'index.html', context)
 
-def getRecentTrack():
-    global artist_id, track_id, sp
+def log_out(request):
+    os.remove(sessions_cache_path(request))
+    del request.session['uuid']
+
+    return redirect('/')
+
+def getRecentTrack(request):
+    global artist_id, track_id
+    sp_oauth = oauth2.SpotifyOAuth(cliend_id, client_secret, Uri, scope=scope, cache_path=sessions_cache_path(request))
     sp = spotipy.Spotify(auth_manager=sp_oauth)
+
+    if not sp_oauth.get_cached_token():
+        return redirect('/')
+
     artist_id = []
     track_id = []
 
@@ -77,8 +94,14 @@ def getRecentTrack():
     return content
 
 # Get recommendation track based on artists and attribute
-def getRecommendationsTrack():
+def getRecommendationsTrack(request):
     global recommendations_track_id
+    sp_oauth = oauth2.SpotifyOAuth(cliend_id, client_secret, Uri, scope=scope, cache_path=sessions_cache_path(request))
+    sp = spotipy.Spotify(auth_manager=sp_oauth)
+
+    if not sp_oauth.get_cached_token():
+        return redirect('/')
+
     recommendations_track_id = []
     songs = []
     recommendations = sp.recommendations(seed_artists=artist_id, min_danceability=min(danceability),
@@ -97,7 +120,13 @@ def getRecommendationsTrack():
     }
     return content
 
-def playlist(playlist_name):
+def playlist(request, playlist_name):
+    sp_oauth = oauth2.SpotifyOAuth(cliend_id, client_secret, Uri, scope=scope, cache_path=sessions_cache_path(request))
+    sp = spotipy.Spotify(auth_manager=sp_oauth)
+
+    if not sp_oauth.get_cached_token():
+        return redirect('/')
+
     # Get user id
     user_profile = sp.me()
     user_id = user_profile['id']
@@ -114,17 +143,21 @@ def playlist(playlist_name):
 
 
 def mainPage(request):
+    sp_oauth = oauth2.SpotifyOAuth(cliend_id, client_secret, Uri, scope=scope, cache_path=sessions_cache_path(request))
     token_info = sp_oauth.get_cached_token()
+
+    if not sp_oauth.get_cached_token():
+        return redirect('/')
+
     if token_info:
         print("Access token available!")
         if request.method == 'POST':
             playlist_imput_name = request.POST.get('playlist')
-            playlist(playlist_imput_name)
-            os.remove('.cache-{}'.format(username))
+            playlist(request, playlist_imput_name)
             return render(request, 'success_notif.html')
         else:
 
-            recommendationTrack = getRecommendationsTrack()
+            recommendationTrack = getRecommendationsTrack(request)
 
             context = {
                 'songs' : recommendationTrack['songs']
@@ -135,15 +168,10 @@ def mainPage(request):
         return redirect('/')
 
 def login(request):
-    print("pepepeppepepepepepepep")
+    sp_oauth = oauth2.SpotifyOAuth(cliend_id, client_secret, Uri, scope=scope, cache_path=sessions_cache_path(request))
+
     url = request.build_absolute_uri()
-    print("lalalalalagit")
     code = sp_oauth.parse_response_code(url)
     print("Found Spotify auth code in Request URL! Trying to get valid access token...")
     token_info = sp_oauth.get_access_token(code)
     return redirect('/')
-
-def getSPOauthURI():
-    print("Getting Authorize url")
-    auth_url = sp_oauth.get_authorize_url()
-    return auth_url
