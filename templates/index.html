@@ -56,6 +56,7 @@
     </p>
     {% else %}
     <h1 class="cover-heading">Recent Tracks Played</h1>
+    <div class="table-responsive-md">
     <table class="table table-dark">
         <thead>
           <tr>
@@ -72,6 +73,7 @@
         {% endfor %}
         </tbody>
     </table>
+    </div>
     <p class="lead">
       <a href="{% url 'main' %}" class="btn btn-lg btn-secondary">See Recommendations</a>
     </p>
