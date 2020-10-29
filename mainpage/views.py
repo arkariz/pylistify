@@ -17,7 +17,7 @@ if not os.path.exists(cache_path):
     os.makedirs(cache_path)
 
 
-
+# ---------- Initiation ----------
 def sessions_cache_path(request):
     return cache_path + request.session.get('uuid')
 
@@ -29,9 +29,9 @@ def index(request):
     token_info = sp_oauth.get_cached_token()
     if token_info:
         print("Token Found")
-        recentTrack = getRecentTrack(request)
+        recent_tracks = getRecentSong(request)
         context = {
-            'recent_songs': getRecentSong(request)
+            'recent_tracks': recent_tracks
         }
         return render(request, 'index.html', context)
     else:
@@ -43,12 +43,25 @@ def index(request):
         }
         return render(request, 'index.html', context)
 
+def login(request):
+    sp_oauth = oauth2.SpotifyOAuth(cliend_id, client_secret, Uri, scope=scope, cache_path=sessions_cache_path(request))
+
+    url = request.build_absolute_uri()
+    code = sp_oauth.parse_response_code(url)
+    print("Found Spotify auth code in Request URL! Trying to get valid access token...")
+    token_info = sp_oauth.get_access_token(code)
+    return redirect('/')
+
 def log_out(request):
     os.remove(sessions_cache_path(request))
     del request.session['uuid']
 
     return redirect('/')
 
+# ---------- END Initiation
+
+
+#---------- Get Recent Track Detail ----------
 def getRecentTrack(request):
     sp_oauth = oauth2.SpotifyOAuth(cliend_id, client_secret, Uri, scope=scope, cache_path=sessions_cache_path(request))
     sp = spotipy.Spotify(auth_manager=sp_oauth)
@@ -56,7 +69,6 @@ def getRecentTrack(request):
     if not sp_oauth.get_cached_token():
         return redirect('/')
 
-    # Get Artist Id and track id
     recent_track = sp.current_user_recently_played(limit=5)
     return recent_track
 
@@ -80,11 +92,15 @@ def getTrackId_recentTrack(request):
 
 def getRecentSong(request):
     recent_track = getRecentTrack(request)
-    recent_song = []
+    tracks = []
+    artists = []
     for idx, item in enumerate(recent_track['items']):
         track = item['track']
-        recent_song.append(track['name'] + ' - ' + track['artists'][0]['name'])
-    return  recent_song
+        tracks.append(track['name'])
+        artists.append(track['artists'][0]['name'])
+
+    content = [{'tracks': t[0], 'artists': t[1]} for t in zip(tracks, artists)]
+    return content
 
 def getRecentTrackAttribute(request):
     sp_oauth = oauth2.SpotifyOAuth(cliend_id, client_secret, Uri, scope=scope, cache_path=sessions_cache_path(request))
@@ -109,8 +125,10 @@ def getRecentTrackAttribute(request):
     }
     return content
 
+#---------- END Get Recent Track Detail ----------
 
-# Get recommendation track based on artists and attribute
+
+# --------- Get Recommendation Track ----------
 def getRecommendationsTrack(request):
     sp_oauth = oauth2.SpotifyOAuth(cliend_id, client_secret, Uri, scope=scope, cache_path=sessions_cache_path(request))
     sp = spotipy.Spotify(auth_manager=sp_oauth)
@@ -126,7 +144,8 @@ def getRecommendationsTrack(request):
 
 
     recommendations_track_id = []
-    songs = []
+    tracks = []
+    artists = []
     recommendations = sp.recommendations(seed_artists=getArtistId_recentTrack(request), min_danceability=min(danceability),
                                          max_danceability=max(danceability), min_tempo=min(tempo),
                                          max_tempo=max(tempo), min_energy=min(energy), max_energy=max(energy),
@@ -134,16 +153,22 @@ def getRecommendationsTrack(request):
 
     for idx, item in enumerate(recommendations['tracks']):
         # print(idx, item['artists'][0]['name'], " – ", item['name'])
-        songs.append(item['name'] + ' - ' + item['artists'][0]['name'])
+        tracks.append(item['name'])
+        artists.append(item['artists'][0]['name'])
         track_id = item['id']
         recommendations_track_id.append(track_id)
 
+    songs = [{'tracks': t[0], 'artists': t[1]} for t in zip(tracks, artists)]
     content = {
         'r_track_id': recommendations_track_id,
         'songs' : songs
     }
     return content
 
+# --------- END Get Recommendation Track ----------
+
+
+# --------- PLAYLIST ----------
 def playlist(request, playlist_name):
     sp_oauth = oauth2.SpotifyOAuth(cliend_id, client_secret, Uri, scope=scope, cache_path=sessions_cache_path(request))
     sp = spotipy.Spotify(auth_manager=sp_oauth)
@@ -166,6 +191,8 @@ def playlist(request, playlist_name):
     r_track_id = getRecommendationsTrack(request)
     recommendations_track_id = r_track_id.get('r_track_id')
     sp.playlist_add_items(playlist_id=playlist_id, items=recommendations_track_id)
+
+# --------- END PLAYLIST ----------
 
 
 def mainPage(request):
@@ -192,12 +219,3 @@ def mainPage(request):
             return render(request, 'result.html', context)
     else:
         return redirect('/')
-
-def login(request):
-    sp_oauth = oauth2.SpotifyOAuth(cliend_id, client_secret, Uri, scope=scope, cache_path=sessions_cache_path(request))
-
-    url = request.build_absolute_uri()
-    code = sp_oauth.parse_response_code(url)
-    print("Found Spotify auth code in Request URL! Trying to get valid access token...")
-    token_info = sp_oauth.get_access_token(code)
-    return redirect('/')
