@@ -16,6 +16,8 @@ cache_path = './.spotify_caches/'
 if not os.path.exists(cache_path):
     os.makedirs(cache_path)
 
+
+
 def sessions_cache_path(request):
     return cache_path + request.session.get('uuid')
 
@@ -29,7 +31,7 @@ def index(request):
         print("Token Found")
         recentTrack = getRecentTrack(request)
         context = {
-            'recent_songs': recentTrack['recent_songs']
+            'recent_songs': getRecentSong(request)
         }
         return render(request, 'index.html', context)
     else:
@@ -48,40 +50,51 @@ def log_out(request):
     return redirect('/')
 
 def getRecentTrack(request):
-    global artist_id, track_id
     sp_oauth = oauth2.SpotifyOAuth(cliend_id, client_secret, Uri, scope=scope, cache_path=sessions_cache_path(request))
     sp = spotipy.Spotify(auth_manager=sp_oauth)
 
     if not sp_oauth.get_cached_token():
         return redirect('/')
 
-    artist_id = []
-    track_id = []
-
-    recent_song = []
-
     # Get Artist Id and track id
     recent_track = sp.current_user_recently_played(limit=5)
+    return recent_track
+
+def getArtistId_recentTrack(request):
+    recent_track = getRecentTrack(request)
+    artist_id = []
     for idx, item in enumerate(recent_track['items']):
         track = item['track']
-
-        recent_song.append(track['name'] + ' - ' + track['artists'][0]['name'])
-
-        # print(idx, track['artists'][0]['name'], " – ", track['name'])
-
-        track_feature = track['id']
-        track_id.append(track_feature)
-
         artist = track['artists'][0]['id']
         artist_id.append(artist)
+    return artist_id
 
+def getTrackId_recentTrack(request):
+    recent_track = getRecentTrack(request)
+    track_id = []
+    for idx, item in enumerate(recent_track['items']):
+        track = item['track']
+        track_feature = track['id']
+        track_id.append(track_feature)
+    return track_id
+
+def getRecentSong(request):
+    recent_track = getRecentTrack(request)
+    recent_song = []
+    for idx, item in enumerate(recent_track['items']):
+        track = item['track']
+        recent_song.append(track['name'] + ' - ' + track['artists'][0]['name'])
+    return  recent_song
+
+def getRecentTrackAttribute(request):
+    sp_oauth = oauth2.SpotifyOAuth(cliend_id, client_secret, Uri, scope=scope, cache_path=sessions_cache_path(request))
+    sp = spotipy.Spotify(auth_manager=sp_oauth)
     # Get track Attribute
-    global danceability, energy, tempo, loudness
     danceability = []
     energy = []
     tempo = []
     loudness = []
-    for item_id in track_id:
+    for item_id in getTrackId_recentTrack(request):
         audio_features = sp.audio_features(tracks=item_id)
         for idx, item in enumerate(audio_features):
             danceability.append(item['danceability'])
@@ -89,22 +102,32 @@ def getRecentTrack(request):
             tempo.append(item['tempo'])
             loudness.append(item['loudness'])
     content = {
-        'recent_songs': recent_song
+        'danceability':danceability,
+        'energy':energy,
+        'tempo':tempo,
+        'loudness':loudness,
     }
     return content
 
+
 # Get recommendation track based on artists and attribute
 def getRecommendationsTrack(request):
-    global recommendations_track_id
     sp_oauth = oauth2.SpotifyOAuth(cliend_id, client_secret, Uri, scope=scope, cache_path=sessions_cache_path(request))
     sp = spotipy.Spotify(auth_manager=sp_oauth)
 
     if not sp_oauth.get_cached_token():
         return redirect('/')
 
+    attribute = getRecentTrackAttribute(request)
+    danceability = attribute.get('danceability')
+    energy = attribute.get('energy')
+    tempo = attribute.get('tempo')
+    loudness = attribute.get('loudness')
+
+
     recommendations_track_id = []
     songs = []
-    recommendations = sp.recommendations(seed_artists=artist_id, min_danceability=min(danceability),
+    recommendations = sp.recommendations(seed_artists=getArtistId_recentTrack(request), min_danceability=min(danceability),
                                          max_danceability=max(danceability), min_tempo=min(tempo),
                                          max_tempo=max(tempo), min_energy=min(energy), max_energy=max(energy),
                                          min_loudness=min(loudness))
@@ -116,6 +139,7 @@ def getRecommendationsTrack(request):
         recommendations_track_id.append(track_id)
 
     content = {
+        'r_track_id': recommendations_track_id,
         'songs' : songs
     }
     return content
@@ -139,6 +163,8 @@ def playlist(request, playlist_name):
     playlist_id = playlist['items'][0]['id']
 
     #Add recommendations track to playlist
+    r_track_id = getRecommendationsTrack(request)
+    recommendations_track_id = r_track_id.get('r_track_id')
     sp.playlist_add_items(playlist_id=playlist_id, items=recommendations_track_id)
 
 
