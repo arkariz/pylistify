@@ -30,6 +30,10 @@ body {
   background-color: #333;
 }
 
+table {
+  table-layout: auto;
+}
+
 body {
   display: -ms-flexbox;
   display: flex;
